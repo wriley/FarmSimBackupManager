@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.textBoxDebug = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -114,6 +115,7 @@
             this.treeViewSavegames.Name = "treeViewSavegames";
             this.treeViewSavegames.Size = new System.Drawing.Size(399, 355);
             this.treeViewSavegames.TabIndex = 0;
+            this.treeViewSavegames.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeViewSavegames_BeforeSelect);
             // 
             // treeViewBackups
             // 
@@ -209,11 +211,12 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.textBoxDebug);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "frmMain";
-            this.Text = "Form1";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.Shown += new System.EventHandler(this.Form1_Shown);
+            this.Text = "FarmSimBackupManager";
+            this.Load += new System.EventHandler(this.frmMain_Load);
+            this.Shown += new System.EventHandler(this.frmMain_Shown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
