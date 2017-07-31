@@ -123,6 +123,7 @@
             this.treeViewBackups.Name = "treeViewBackups";
             this.treeViewBackups.Size = new System.Drawing.Size(399, 355);
             this.treeViewBackups.TabIndex = 0;
+            this.treeViewBackups.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeViewBackups_BeforeSelect);
             // 
             // labelSaveGames
             // 

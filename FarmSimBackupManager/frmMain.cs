@@ -12,6 +12,7 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Xml;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace FarmSimBackupManager
 {
@@ -20,7 +21,8 @@ namespace FarmSimBackupManager
         public string backupFolder;
         private string saveGamePath;
         private string timestampString = "yyyyMMdd-HHmmss";
-        private List<TreeNode> unselectableNodes = new List<TreeNode>();
+        private List<TreeNode> unselectableSaveNodes = new List<TreeNode>();
+        private List<TreeNode> unselectableBackupNodes = new List<TreeNode>();
 
         private struct FarmSimSaveGame
         {
@@ -29,6 +31,7 @@ namespace FarmSimBackupManager
             public string mapTitle;
             public string playerName;
             public string saveDate;
+            public string backupName;
         }
 
         public frmMain()
@@ -113,22 +116,21 @@ namespace FarmSimBackupManager
                 }
             }
 
-//            mySaveGames.Sort();
             treeViewSavegames.BeginUpdate();
             treeViewSavegames.Nodes.Clear();
+            unselectableSaveNodes.Clear();
             for (int i = 0; i < mySaveGames.Count; i++)
             {
                 DebugLog("looking at " + mySaveGames[i].directoryName);
                 TreeNode newParentNode = treeViewSavegames.Nodes.Add(mySaveGames[i].directoryName);
                 TreeNode newChildNode = newParentNode.Nodes.Add(mySaveGames[i].playerName);
-                unselectableNodes.Add(newChildNode);
+                unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(mySaveGames[i].savegameName);
-                unselectableNodes.Add(newChildNode);
+                unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(mySaveGames[i].mapTitle);
-                unselectableNodes.Add(newChildNode);
+                unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(mySaveGames[i].saveDate);
-                unselectableNodes.Add(newChildNode);
-                
+                unselectableSaveNodes.Add(newChildNode);
             }
             treeViewSavegames.EndUpdate();
         }
@@ -136,8 +138,8 @@ namespace FarmSimBackupManager
         private void GetBackupFiles()
         {
             string[] backupFiles = Directory.GetFiles(backupFolder);
-            treeViewBackups.Nodes.Clear();
-            Regex r = new Regex("^savegame[0-9]+_[0-9]{8}-[0-9]{6}.zip$");
+            List<FarmSimSaveGame> backupSaveGames = new List<FarmSimSaveGame>();
+            Regex r = new Regex(@"^(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
             Match m;
             foreach (string backupFile in backupFiles)
             {
@@ -145,12 +147,54 @@ namespace FarmSimBackupManager
                 {
                     string fileName = new FileInfo(backupFile).Name;
                     m = r.Match(fileName);
-                    if (m.Success)
+                    if (m.Success && m.Groups[1].Value != null)
                     {
-                        treeViewBackups.Nodes.Add(fileName);
+                        DebugLog("Getting info from zip " + fileName);
+                        using (ZipInputStream s = new ZipInputStream(File.OpenRead(backupFile)))
+                        {
+                            ZipEntry theEntry;
+                            while ((theEntry = s.GetNextEntry()) != null)
+                            {
+                                if (theEntry.Name == "careerSavegame.xml")
+                                {
+                                    XmlDocument gameXml = new XmlDocument();
+                                    FarmSimSaveGame save = new FarmSimSaveGame();
+                                    gameXml.Load(s);
+
+                                    save.directoryName = m.Groups[1].Value;
+                                    save.backupName = fileName;
+                                    XmlNode node = gameXml.DocumentElement.SelectSingleNode("settings/savegameName");
+                                    save.savegameName = node.InnerText;
+                                    node = gameXml.DocumentElement.SelectSingleNode("settings/mapTitle");
+                                    save.mapTitle = node.InnerText;
+                                    node = gameXml.DocumentElement.SelectSingleNode("settings/saveDate");
+                                    save.saveDate = node.InnerText;
+                                    node = gameXml.DocumentElement.SelectSingleNode("settings/playerName");
+                                    save.playerName = node.InnerText;
+                                    backupSaveGames.Add(save);
+                                }
+                            }
+                            s.Close();
+                        }
                     }
                 }
             }
+            treeViewBackups.BeginUpdate();
+            treeViewBackups.Nodes.Clear();
+            unselectableBackupNodes.Clear();
+            for (int i = 0; i < backupSaveGames.Count; i++)
+            {
+                TreeNode newParentNode = treeViewBackups.Nodes.Add(backupSaveGames[i].backupName);
+                TreeNode newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].playerName);
+                unselectableBackupNodes.Add(newChildNode);
+                newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].savegameName);
+                unselectableBackupNodes.Add(newChildNode);
+                newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].mapTitle);
+                unselectableBackupNodes.Add(newChildNode);
+                newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].saveDate);
+                unselectableBackupNodes.Add(newChildNode);
+            }
+            treeViewBackups.EndUpdate();
         }
 
         private void frmMain_Shown(object sender, EventArgs e)
@@ -204,7 +248,88 @@ namespace FarmSimBackupManager
                 string zipFilePath = backupFolder + Path.DirectorySeparatorChar + dirName + "_" + dateString + ".zip";
                 DebugLog("zipping to " + zipFilePath);
                 ZipFolder(mySaveGameDir, zipFilePath);
+
                 GetBackupFiles();
+            }
+        }
+
+        private void ZipFolder(string sourceDir, string zipFile)
+        {
+            try
+            {
+                string[] filenames = Directory.GetFiles(sourceDir);
+
+                using (ZipOutputStream s = new ZipOutputStream(File.Create(zipFile)))
+                {
+                    s.SetLevel(9);
+                    byte[] buffer = new byte[4096];
+                    foreach(string file in filenames)
+                    {
+                        var entry = new ZipEntry(Path.GetFileName(file));
+                        entry.DateTime = DateTime.Now;
+                        s.PutNextEntry(entry);
+
+                        using(FileStream fs = File.OpenRead(file))
+                        {
+                            int sourceBytes;
+                            do
+                            {
+                                sourceBytes = fs.Read(buffer, 0, buffer.Length);
+                                s.Write(buffer, 0, sourceBytes);
+                            } while (sourceBytes > 0);
+                        }
+                    }
+                    s.Finish();
+                    s.Close();
+                }
+            } catch(Exception ex)
+            {
+                DebugLog("Exception during zip file creation: " + ex.Message);
+            }
+        }
+
+        private void UnzipFile(string zipFile, string targetDir)
+        {
+            try
+            {
+                using( ZipInputStream s = new ZipInputStream(File.OpenRead(zipFile)))
+                {
+                    ZipEntry theEntry;
+                    while((theEntry = s.GetNextEntry()) != null)
+                    {
+                        string directoryName = Path.GetDirectoryName(theEntry.Name);
+                        string fileName = Path.GetFileName(theEntry.Name);
+
+                        if(directoryName.Length > 0)
+                        {
+                            Directory.CreateDirectory(directoryName);
+                        }
+
+                        if(fileName != string.Empty)
+                        {
+                            using (FileStream streamWriter = File.Create(theEntry.Name))
+                            {
+                                int size = 2048;
+                                byte[] data = new byte[size];
+                                while(true)
+                                {
+                                    size = s.Read(data, 0, data.Length);
+                                    if(size > 0)
+                                    {
+                                        streamWriter.Write(data, 0, size);
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(Exception ex)
+            {
+                DebugLog("Exception while unzipping file: " + ex.Message);
             }
         }
 
@@ -246,37 +371,6 @@ namespace FarmSimBackupManager
             }
         }
 
-        public static void ZipFolder(string sourceFolder, string zipFile)
-        {
-            if (!System.IO.Directory.Exists(sourceFolder))
-                throw new ArgumentException("sourceDirectory");
-
-            byte[] zipHeader = new byte[] { 80, 75, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-            using (System.IO.FileStream fs = System.IO.File.Create(zipFile))
-            {
-                fs.Write(zipHeader, 0, zipHeader.Length);
-            }
-
-            dynamic shellApplication = Activator.CreateInstance(Type.GetTypeFromProgID("Shell.Application"));
-            dynamic source = shellApplication.NameSpace(sourceFolder);
-            dynamic destination = shellApplication.NameSpace(zipFile);
-
-            destination.CopyHere(source.Items(), 20);
-        }
-
-        public static void UnzipFile(string zipFile, string targetFolder)
-        {
-            if (!System.IO.Directory.Exists(targetFolder))
-                System.IO.Directory.CreateDirectory(targetFolder);
-
-            dynamic shellApplication = Activator.CreateInstance(Type.GetTypeFromProgID("Shell.Application"));
-            dynamic compressedFolderContents = shellApplication.NameSpace(zipFile).Items;
-            dynamic destinationFolder = shellApplication.NameSpace(targetFolder);
-
-            destinationFolder.CopyHere(compressedFolderContents);
-        }
-
         private void buttonRemoveBackup_Click(object sender, EventArgs e)
         {
             if (treeViewBackups.SelectedNode != null)
@@ -297,7 +391,15 @@ namespace FarmSimBackupManager
 
         private void treeViewSavegames_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
-            if (unselectableNodes.Contains(e.Node))
+            if (unselectableSaveNodes.Contains(e.Node))
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void treeViewBackups_BeforeSelect(object sender, TreeViewCancelEventArgs e)
+        {
+            if (unselectableBackupNodes.Contains(e.Node))
             {
                 e.Cancel = true;
             }
