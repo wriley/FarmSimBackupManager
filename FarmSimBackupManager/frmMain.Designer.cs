@@ -31,8 +31,8 @@
             this.textBoxDebug = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeViewSavegames = new System.Windows.Forms.TreeView();
@@ -43,6 +43,7 @@
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.buttonBackup = new System.Windows.Forms.Button();
             this.buttonRestore = new System.Windows.Forms.Button();
+            this.buttonRemoveBackup = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -78,19 +79,19 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
             // 
-            // exitToolStripMenuItem
-            // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
-            this.exitToolStripMenuItem.Text = "E&xit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-            // 
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.optionsToolStripMenuItem.Text = "&Options";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.exitToolStripMenuItem.Text = "E&xit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -164,6 +165,7 @@
             // 
             this.flowLayoutPanel1.Controls.Add(this.buttonBackup);
             this.flowLayoutPanel1.Controls.Add(this.buttonRestore);
+            this.flowLayoutPanel1.Controls.Add(this.buttonRemoveBackup);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(408, 32);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(84, 355);
@@ -188,6 +190,16 @@
             this.buttonRestore.Text = "<< Restore";
             this.buttonRestore.UseVisualStyleBackColor = true;
             this.buttonRestore.Click += new System.EventHandler(this.buttonRestore_Click);
+            // 
+            // buttonRemoveBackup
+            // 
+            this.buttonRemoveBackup.Location = new System.Drawing.Point(3, 61);
+            this.buttonRemoveBackup.Name = "buttonRemoveBackup";
+            this.buttonRemoveBackup.Size = new System.Drawing.Size(75, 38);
+            this.buttonRemoveBackup.TabIndex = 2;
+            this.buttonRemoveBackup.Text = "Remove Backup";
+            this.buttonRemoveBackup.UseVisualStyleBackColor = true;
+            this.buttonRemoveBackup.Click += new System.EventHandler(this.buttonRemoveBackup_Click);
             // 
             // frmMain
             // 
@@ -229,6 +241,7 @@
         private System.Windows.Forms.Button buttonBackup;
         private System.Windows.Forms.Button buttonRestore;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.Button buttonRemoveBackup;
     }
 }
 

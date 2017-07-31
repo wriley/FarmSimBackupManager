@@ -54,6 +54,7 @@ namespace FarmSimBackupManager
         {
             Properties.Settings.Default.backupFolder = backupFolder;
             Properties.Settings.Default.Save();
+            GetBackupFiles();
         }
 
         private void DebugLog(string msg)
@@ -233,5 +234,22 @@ namespace FarmSimBackupManager
             destinationFolder.CopyHere(compressedFolderContents);
         }
 
+        private void buttonRemoveBackup_Click(object sender, EventArgs e)
+        {
+            if (treeViewBackups.SelectedNode != null)
+            {
+                string backupName = treeViewBackups.SelectedNode.Text;
+                string zipFilePath = backupFolder + Path.DirectorySeparatorChar + backupName;
+                if(File.Exists(zipFilePath))
+                {
+                    DialogResult result = MessageBox.Show("Remove backup file " + backupName + "?", "Remove backup?", MessageBoxButtons.YesNo);
+                    if(result == DialogResult.Yes)
+                    {
+                        File.Delete(zipFilePath);
+                        GetBackupFiles();
+                    }
+                }
+            }
+        }
     }
 }
