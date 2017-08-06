@@ -32,6 +32,7 @@ namespace FarmSimBackupManager
             public string playerName;
             public string saveDate;
             public string backupName;
+            public Int32 money;
         }
 
         public frmMain()
@@ -109,6 +110,8 @@ namespace FarmSimBackupManager
                             save.saveDate = node.InnerText;
                             node = gameXml.DocumentElement.SelectSingleNode("settings/playerName");
                             save.playerName = node.InnerText;
+                            node = gameXml.DocumentElement.SelectSingleNode("statistics/money");
+                            save.money = Convert.ToInt32(node.InnerText);
                             DebugLog("adding " + save.directoryName);
                             mySaveGames.Add(save);
                         }
@@ -123,13 +126,15 @@ namespace FarmSimBackupManager
             {
                 DebugLog("looking at " + mySaveGames[i].directoryName);
                 TreeNode newParentNode = treeViewSavegames.Nodes.Add(mySaveGames[i].directoryName);
-                TreeNode newChildNode = newParentNode.Nodes.Add(mySaveGames[i].playerName);
+                TreeNode newChildNode = newParentNode.Nodes.Add(String.Format("Player: {0}", mySaveGames[i].playerName));
                 unselectableSaveNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(mySaveGames[i].savegameName);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Name: {0}", mySaveGames[i].savegameName));
                 unselectableSaveNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(mySaveGames[i].mapTitle);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Map: {0}", mySaveGames[i].mapTitle));
                 unselectableSaveNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(mySaveGames[i].saveDate);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Saved: {0}", mySaveGames[i].saveDate));
+                unselectableSaveNodes.Add(newChildNode);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Money: {0:n0}", mySaveGames[i].money));
                 unselectableSaveNodes.Add(newChildNode);
             }
             treeViewSavegames.EndUpdate();
@@ -171,6 +176,8 @@ namespace FarmSimBackupManager
                                     save.saveDate = node.InnerText;
                                     node = gameXml.DocumentElement.SelectSingleNode("settings/playerName");
                                     save.playerName = node.InnerText;
+                                    node = gameXml.DocumentElement.SelectSingleNode("statistics/money");
+                                    save.money = Convert.ToInt32(node.InnerText);
                                     backupSaveGames.Add(save);
                                 }
                             }
@@ -185,13 +192,15 @@ namespace FarmSimBackupManager
             for (int i = 0; i < backupSaveGames.Count; i++)
             {
                 TreeNode newParentNode = treeViewBackups.Nodes.Add(backupSaveGames[i].backupName);
-                TreeNode newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].playerName);
+                TreeNode newChildNode = newParentNode.Nodes.Add(String.Format("Player: {0}", backupSaveGames[i].playerName));
                 unselectableBackupNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].savegameName);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Name: {0}", backupSaveGames[i].savegameName));
                 unselectableBackupNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].mapTitle);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Map: {0}", backupSaveGames[i].mapTitle));
                 unselectableBackupNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(backupSaveGames[i].saveDate);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Saved: {0}", backupSaveGames[i].saveDate));
+                unselectableBackupNodes.Add(newChildNode);
+                newChildNode = newParentNode.Nodes.Add(String.Format("Money: {0:n0}", backupSaveGames[i].money));
                 unselectableBackupNodes.Add(newChildNode);
             }
             treeViewBackups.EndUpdate();
