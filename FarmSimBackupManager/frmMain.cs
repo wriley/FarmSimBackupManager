@@ -311,12 +311,13 @@ namespace FarmSimBackupManager
 
                         if(directoryName.Length > 0)
                         {
-                            Directory.CreateDirectory(directoryName);
+                            Directory.CreateDirectory(Path.Combine(targetDir, directoryName));
                         }
 
                         if(fileName != string.Empty)
                         {
-                            using (FileStream streamWriter = File.Create(theEntry.Name))
+                            var filePath = Path.Combine(targetDir, fileName);
+                            using (FileStream streamWriter = File.Create(filePath))
                             {
                                 int size = 2048;
                                 byte[] data = new byte[size];
@@ -368,6 +369,7 @@ namespace FarmSimBackupManager
                             return;
                         }
                     }
+                    Directory.CreateDirectory(mySaveGameDir);
                     string zipFilePath = backupFolder + Path.DirectorySeparatorChar + backupName;
                     DebugLog("Unzipping from " + zipFilePath);
                     UnzipFile(zipFilePath, mySaveGameDir);
