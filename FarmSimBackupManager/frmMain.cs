@@ -234,7 +234,9 @@ namespace FarmSimBackupManager
             if (treeViewSavegames.SelectedNode != null)
             {
                 string dirName = treeViewSavegames.SelectedNode.Text;
+                showUI(false);
                 SaveGame(dirName);
+                showUI(true);
             }
         }
 
@@ -243,7 +245,9 @@ namespace FarmSimBackupManager
             if(treeViewBackups.SelectedNode != null)
             {
                 string backupName = treeViewBackups.SelectedNode.Text;
+                showUI(false);
                 RestoreGame(backupName);
+                showUI(true);
             }
         }
 
@@ -257,8 +261,11 @@ namespace FarmSimBackupManager
                 string zipFilePath = backupFolder + Path.DirectorySeparatorChar + dirName + "_" + dateString + ".zip";
                 DebugLog("zipping to " + zipFilePath);
                 ZipFolder(mySaveGameDir, zipFilePath);
-
                 GetBackupFiles();
+                DebugLog("SaveGame complete");
+            } else
+            {
+                DebugLog("Error: Directory not found " + mySaveGameDir);
             }
         }
 
@@ -379,6 +386,7 @@ namespace FarmSimBackupManager
                 {
                     DebugLog("Unable to determine save game folder name from " + dirNameFull);
                 }
+                DebugLog("RestoreGame complete");
             }
         }
 
@@ -395,6 +403,7 @@ namespace FarmSimBackupManager
                     {
                         File.Delete(zipFilePath);
                         GetBackupFiles();
+                        DebugLog("RemoveBackup complete");
                     }
                 }
             }
@@ -414,6 +423,15 @@ namespace FarmSimBackupManager
             {
                 e.Cancel = true;
             }
+        }
+
+        private void showUI(bool show)
+        {
+            treeViewSavegames.Enabled = show;
+            treeViewBackups.Enabled = show;
+            buttonBackup.Enabled = show;
+            buttonRestore.Enabled = show;
+            buttonRemoveBackup.Enabled = show;
         }
     }
 }
