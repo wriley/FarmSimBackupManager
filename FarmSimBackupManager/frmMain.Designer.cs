@@ -45,6 +45,7 @@
             this.buttonBackup = new System.Windows.Forms.Button();
             this.buttonRestore = new System.Windows.Forms.Button();
             this.buttonRemoveBackup = new System.Windows.Forms.Button();
+            this.buttonOpenBackupLocation = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -83,14 +84,14 @@
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.optionsToolStripMenuItem.Text = "&Options";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -169,6 +170,7 @@
             this.flowLayoutPanel1.Controls.Add(this.buttonBackup);
             this.flowLayoutPanel1.Controls.Add(this.buttonRestore);
             this.flowLayoutPanel1.Controls.Add(this.buttonRemoveBackup);
+            this.flowLayoutPanel1.Controls.Add(this.buttonOpenBackupLocation);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(408, 32);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(84, 355);
@@ -196,6 +198,7 @@
             // 
             // buttonRemoveBackup
             // 
+            this.buttonRemoveBackup.ForeColor = System.Drawing.Color.Red;
             this.buttonRemoveBackup.Location = new System.Drawing.Point(3, 61);
             this.buttonRemoveBackup.Name = "buttonRemoveBackup";
             this.buttonRemoveBackup.Size = new System.Drawing.Size(75, 38);
@@ -203,6 +206,16 @@
             this.buttonRemoveBackup.Text = "Remove Backup";
             this.buttonRemoveBackup.UseVisualStyleBackColor = true;
             this.buttonRemoveBackup.Click += new System.EventHandler(this.buttonRemoveBackup_Click);
+            // 
+            // buttonOpenBackupLocation
+            // 
+            this.buttonOpenBackupLocation.Location = new System.Drawing.Point(3, 105);
+            this.buttonOpenBackupLocation.Name = "buttonOpenBackupLocation";
+            this.buttonOpenBackupLocation.Size = new System.Drawing.Size(75, 49);
+            this.buttonOpenBackupLocation.TabIndex = 3;
+            this.buttonOpenBackupLocation.Text = "Open Backup Folder";
+            this.buttonOpenBackupLocation.UseVisualStyleBackColor = true;
+            this.buttonOpenBackupLocation.Click += new System.EventHandler(this.buttonOpenBackupLocation_Click);
             // 
             // frmMain
             // 
@@ -246,6 +259,7 @@
         private System.Windows.Forms.Button buttonRestore;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.Button buttonRemoveBackup;
+        private System.Windows.Forms.Button buttonOpenBackupLocation;
     }
 }
 

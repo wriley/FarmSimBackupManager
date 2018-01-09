@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using System.Collections;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.IO.Compression;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
 
@@ -125,11 +118,11 @@ namespace FarmSimBackupManager
             for (int i = 0; i < mySaveGames.Count; i++)
             {
                 DebugLog("looking at " + mySaveGames[i].directoryName);
-                TreeNode newParentNode = treeViewSavegames.Nodes.Add(mySaveGames[i].directoryName);
+                TreeNode newParentNode = treeViewSavegames.Nodes.Add(String.Format("{0}: {1}", mySaveGames[i].directoryName, mySaveGames[i].savegameName));
                 TreeNode newChildNode = newParentNode.Nodes.Add(String.Format("Player: {0}", mySaveGames[i].playerName));
                 unselectableSaveNodes.Add(newChildNode);
-                newChildNode = newParentNode.Nodes.Add(String.Format("Name: {0}", mySaveGames[i].savegameName));
-                unselectableSaveNodes.Add(newChildNode);
+                //newChildNode = newParentNode.Nodes.Add(String.Format("Name: {0}", mySaveGames[i].savegameName));
+                //unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Map: {0}", mySaveGames[i].mapTitle));
                 unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Saved: {0}", mySaveGames[i].saveDate));
@@ -148,7 +141,7 @@ namespace FarmSimBackupManager
             Match m;
             foreach (string backupFile in backupFiles)
             {
-                if(File.Exists(backupFile))
+                if (File.Exists(backupFile))
                 {
                     string fileName = new FileInfo(backupFile).Name;
                     m = r.Match(fileName);
@@ -220,7 +213,7 @@ namespace FarmSimBackupManager
         private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             frmOptions frmOptions = new frmOptions(this);
-            frmOptions.Show(this);
+            frmOptions.ShowDialog(this);
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -233,21 +226,30 @@ namespace FarmSimBackupManager
         {
             if (treeViewSavegames.SelectedNode != null)
             {
-                string dirName = treeViewSavegames.SelectedNode.Text;
+
+                string dirText = treeViewSavegames.SelectedNode.Text;
+                int i = dirText.IndexOf(':');
+                string dirName = dirText.Substring(0, i);
                 showUI(false);
                 SaveGame(dirName);
                 showUI(true);
+            } else
+            {
+                DebugLog("No save game selected to backup!");
             }
         }
 
         private void buttonRestore_Click(object sender, EventArgs e)
         {
-            if(treeViewBackups.SelectedNode != null)
+            if (treeViewBackups.SelectedNode != null)
             {
                 string backupName = treeViewBackups.SelectedNode.Text;
                 showUI(false);
                 RestoreGame(backupName);
                 showUI(true);
+            } else
+            {
+                DebugLog("No backup file selected to restore!");
             }
         }
 
@@ -263,7 +265,8 @@ namespace FarmSimBackupManager
                 ZipFolder(mySaveGameDir, zipFilePath);
                 GetBackupFiles();
                 DebugLog("SaveGame complete");
-            } else
+            }
+            else
             {
                 DebugLog("Error: Directory not found " + mySaveGameDir);
             }
@@ -279,13 +282,13 @@ namespace FarmSimBackupManager
                 {
                     s.SetLevel(9);
                     byte[] buffer = new byte[4096];
-                    foreach(string file in filenames)
+                    foreach (string file in filenames)
                     {
                         var entry = new ZipEntry(Path.GetFileName(file));
                         entry.DateTime = DateTime.Now;
                         s.PutNextEntry(entry);
 
-                        using(FileStream fs = File.OpenRead(file))
+                        using (FileStream fs = File.OpenRead(file))
                         {
                             int sourceBytes;
                             do
@@ -298,7 +301,8 @@ namespace FarmSimBackupManager
                     s.Finish();
                     s.Close();
                 }
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 DebugLog("Exception during zip file creation: " + ex.Message);
             }
@@ -308,30 +312,30 @@ namespace FarmSimBackupManager
         {
             try
             {
-                using( ZipInputStream s = new ZipInputStream(File.OpenRead(zipFile)))
+                using (ZipInputStream s = new ZipInputStream(File.OpenRead(zipFile)))
                 {
                     ZipEntry theEntry;
-                    while((theEntry = s.GetNextEntry()) != null)
+                    while ((theEntry = s.GetNextEntry()) != null)
                     {
                         string directoryName = Path.GetDirectoryName(theEntry.Name);
                         string fileName = Path.GetFileName(theEntry.Name);
 
-                        if(directoryName.Length > 0)
+                        if (directoryName.Length > 0)
                         {
                             Directory.CreateDirectory(Path.Combine(targetDir, directoryName));
                         }
 
-                        if(fileName != string.Empty)
+                        if (fileName != string.Empty)
                         {
                             var filePath = Path.Combine(targetDir, fileName);
                             using (FileStream streamWriter = File.Create(filePath))
                             {
                                 int size = 2048;
                                 byte[] data = new byte[size];
-                                while(true)
+                                while (true)
                                 {
                                     size = s.Read(data, 0, data.Length);
-                                    if(size > 0)
+                                    if (size > 0)
                                     {
                                         streamWriter.Write(data, 0, size);
                                     }
@@ -344,7 +348,8 @@ namespace FarmSimBackupManager
                         }
                     }
                 }
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 DebugLog("Exception while unzipping file: " + ex.Message);
             }
@@ -367,11 +372,11 @@ namespace FarmSimBackupManager
                     {
                         DebugLog(dirName + " already exists!");
                         DialogResult result = MessageBox.Show(dirName + " already exists, overwrite?", "Overwrite Save?", MessageBoxButtons.YesNo);
-                        if(result == DialogResult.Yes)
+                        if (result == DialogResult.Yes)
                         {
                             Directory.Delete(mySaveGameDir, true);
                         }
-                        if(result == DialogResult.No)
+                        if (result == DialogResult.No)
                         {
                             return;
                         }
@@ -396,16 +401,19 @@ namespace FarmSimBackupManager
             {
                 string backupName = treeViewBackups.SelectedNode.Text;
                 string zipFilePath = backupFolder + Path.DirectorySeparatorChar + backupName;
-                if(File.Exists(zipFilePath))
+                if (File.Exists(zipFilePath))
                 {
                     DialogResult result = MessageBox.Show("Remove backup file " + backupName + "?", "Remove backup?", MessageBoxButtons.YesNo);
-                    if(result == DialogResult.Yes)
+                    if (result == DialogResult.Yes)
                     {
                         File.Delete(zipFilePath);
                         GetBackupFiles();
                         DebugLog("RemoveBackup complete");
                     }
                 }
+            } else
+            {
+                DebugLog("No backup selected to remove!");
             }
         }
 
@@ -432,6 +440,27 @@ namespace FarmSimBackupManager
             buttonBackup.Enabled = show;
             buttonRestore.Enabled = show;
             buttonRemoveBackup.Enabled = show;
+        }
+
+        // https://www.codeproject.com/Questions/852563/How-to-open-file-explorer-at-given-location-in-csh
+        private void OpenFolder(string folderPath)
+        {
+            if (Directory.Exists(folderPath))
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo("explorer.exe");
+                startInfo.Arguments = folderPath;
+
+                Process.Start(startInfo);
+            }
+            else
+            {
+                MessageBox.Show(string.Format("{0} Directory does not exist!", folderPath));
+            }
+        }
+
+        private void buttonOpenBackupLocation_Click(object sender, EventArgs e)
+        {
+            OpenFolder(backupFolder);
         }
     }
 }
