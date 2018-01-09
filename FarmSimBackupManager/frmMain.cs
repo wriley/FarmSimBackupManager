@@ -135,6 +135,10 @@ namespace FarmSimBackupManager
 
         private void GetBackupFiles()
         {
+            if (!Directory.Exists(backupFolder))
+            {
+                return;
+            }
             string[] backupFiles = Directory.GetFiles(backupFolder);
             List<FarmSimSaveGame> backupSaveGames = new List<FarmSimSaveGame>();
             Regex r = new Regex(@"^(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
