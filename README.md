@@ -7,6 +7,7 @@ A simple backup/restore tool for Farming Simulator 17
 How to install:
 * Download zip file and extract to directory of your choice
 * Double click FarmSimBackupManager.exe
-* Set a backup folder location to store files
+* Your save game location will be found from Windows registry
+* Set a backup folder location to store created backup files
 
 Use at your own risk
