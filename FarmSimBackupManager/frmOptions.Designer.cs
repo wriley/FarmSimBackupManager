@@ -94,7 +94,7 @@
             this.Controls.Add(this.textBoxBackupFolder);
             this.Controls.Add(this.labelBackupFolder);
             this.Name = "frmOptions";
-            this.Text = "frmOptions";
+            this.Text = "Options";
             this.Load += new System.EventHandler(this.frmOptions_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
