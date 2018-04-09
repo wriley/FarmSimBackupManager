@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Xml;
 using ICSharpCode.SharpZipLib.Zip;
+using System.Globalization;
 
 namespace FarmSimBackupManager
 {
@@ -16,10 +17,13 @@ namespace FarmSimBackupManager
         private string timestampString = "yyyyMMdd-HHmmss";
         private List<TreeNode> unselectableSaveNodes = new List<TreeNode>();
         private List<TreeNode> unselectableBackupNodes = new List<TreeNode>();
+        private List<FarmSimSaveGame> mySaveGames = new List<FarmSimSaveGame>();
+        private List<FarmSimSaveGame> backupSaveGames = new List<FarmSimSaveGame>();
 
         private struct FarmSimSaveGame
         {
             public string directoryName;
+            public DateTime directoryChanged;
             public string savegameName;
             public string mapTitle;
             public string playerName;
@@ -49,8 +53,7 @@ namespace FarmSimBackupManager
             // C:\Users\Computer User\Documents\My Games\FarmingSimulator2017
             saveGamePath = path + Path.DirectorySeparatorChar + "My Games" + Path.DirectorySeparatorChar + "FarmingSimulator2017";
 
-            GetSaveGames();
-            GetBackupFiles();
+            RefreshLists();
         }
 
         private void LoadSettings()
@@ -72,7 +75,7 @@ namespace FarmSimBackupManager
 
         private void GetSaveGames()
         {
-            List<FarmSimSaveGame> mySaveGames = new List<FarmSimSaveGame>();
+            mySaveGames = new List<FarmSimSaveGame>();
             string[] dirs = Directory.GetDirectories(saveGamePath);
             foreach (string dir in dirs)
             {
@@ -94,7 +97,9 @@ namespace FarmSimBackupManager
 
                             XmlDocument gameXml = new XmlDocument();
                             gameXml.Load(gameXmlFile);
-                            save.directoryName = new DirectoryInfo(dir).Name;
+                            DirectoryInfo di = new DirectoryInfo(dir);
+                            save.directoryName = di.Name;
+                            save.directoryChanged = di.LastWriteTime;
                             XmlNode node = gameXml.DocumentElement.SelectSingleNode("settings/savegameName");
                             save.savegameName = node.InnerText;
                             node = gameXml.DocumentElement.SelectSingleNode("settings/mapTitle");
@@ -118,17 +123,22 @@ namespace FarmSimBackupManager
             for (int i = 0; i < mySaveGames.Count; i++)
             {
                 DebugLog("looking at " + mySaveGames[i].directoryName);
-                TreeNode newParentNode = treeViewSavegames.Nodes.Add(String.Format("{0}: {1}", mySaveGames[i].directoryName, mySaveGames[i].savegameName));
+                TreeNode newParentNode = treeViewSavegames.Nodes.Add(String.Format("{0}: {1} ({2})", mySaveGames[i].directoryName, mySaveGames[i].savegameName, mySaveGames[i].directoryChanged.ToString()));
                 TreeNode newChildNode = newParentNode.Nodes.Add(String.Format("Player: {0}", mySaveGames[i].playerName));
                 unselectableSaveNodes.Add(newChildNode);
-                //newChildNode = newParentNode.Nodes.Add(String.Format("Name: {0}", mySaveGames[i].savegameName));
-                //unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Map: {0}", mySaveGames[i].mapTitle));
                 unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Saved: {0}", mySaveGames[i].saveDate));
                 unselectableSaveNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Money: {0:n0}", mySaveGames[i].money));
                 unselectableSaveNodes.Add(newChildNode);
+
+                DateTime latest = GetLatestZipDate(mySaveGames[i].directoryName);
+                if(latest.CompareTo(mySaveGames[i].directoryChanged) >= 0)
+                {
+                    newParentNode.ForeColor = System.Drawing.Color.Green;
+                    //newParentNode.NodeFont = new System.Drawing.Font(treeViewBackups.Font, System.Drawing.FontStyle.Bold);
+                }
             }
             treeViewSavegames.EndUpdate();
         }
@@ -140,7 +150,7 @@ namespace FarmSimBackupManager
                 return;
             }
             string[] backupFiles = Directory.GetFiles(backupFolder);
-            List<FarmSimSaveGame> backupSaveGames = new List<FarmSimSaveGame>();
+            backupSaveGames = new List<FarmSimSaveGame>();
             Regex r = new Regex(@"^(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
             Match m;
             foreach (string backupFile in backupFiles)
@@ -199,8 +209,76 @@ namespace FarmSimBackupManager
                 unselectableBackupNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Money: {0:n0}", backupSaveGames[i].money));
                 unselectableBackupNodes.Add(newChildNode);
+
+                /*
+                Regex r2 = new Regex(@"^(savegame[0-9]+)_([0-9]{8}-[0-9]{6}).zip$");
+                Match m2 = r2.Match(backupSaveGames[i].backupName);
+                if (m2.Success && m2.Groups.Count == 3)
+                {
+                    DateTime saveDate = GetSaveGameDate(m2.Groups[1].Value);
+                    if (saveDate != DateTime.MinValue)
+                    {
+                        try
+                        {
+                            DateTime zipDate = new DateTime();
+                            DateTime.TryParseExact(m2.Groups[2].Value, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out zipDate);
+                            if(zipDate != DateTime.MinValue)
+                            {
+                                if (zipDate.CompareTo(saveDate) >= 0)
+                                {
+                                    newParentNode.ForeColor = System.Drawing.Color.Green;
+                                    newParentNode.NodeFont = new System.Drawing.Font(treeViewBackups.Font, System.Drawing.FontStyle.Bold);
+                                }
+                            }
+                            
+                        }
+                        catch (Exception ex)
+                        {
+                            DebugLog("Exception: " + ex.ToString());
+                        }
+
+
+                    }
+                }
+                */
             }
             treeViewBackups.EndUpdate();
+        }
+
+        private DateTime GetSaveGameDate(string save)
+        {
+            for (int i = 0; i < mySaveGames.Count; i++)
+            {
+                if (mySaveGames[i].directoryName == save)
+                {
+                    return mySaveGames[i].directoryChanged;
+                }
+            }
+            return DateTime.MinValue;
+        }
+
+        private DateTime GetLatestZipDate(string save)
+        {
+            DateTime latest = DateTime.MinValue;
+            DateTime lastDate = DateTime.MinValue;
+            for (int i = 0; i < backupSaveGames.Count; i++)
+            {
+                Regex r = new Regex(@"^(savegame[0-9]+)_([0-9]{8}-[0-9]{6}).zip$");
+                Match m = r.Match(backupSaveGames[i].backupName);
+                if (m.Success)
+                {
+                    if (m.Groups[1].Value == save)
+                    {
+                        DateTime zipDate = new DateTime();
+                        DateTime.TryParseExact(m.Groups[2].Value, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out zipDate);
+                        if (zipDate != DateTime.MinValue && zipDate.CompareTo(lastDate) == 1)
+                        {
+                            latest = zipDate;
+                        }
+                    }
+                }
+            }
+            return latest;
         }
 
         private void frmMain_Shown(object sender, EventArgs e)
@@ -237,7 +315,9 @@ namespace FarmSimBackupManager
                 showUI(false);
                 SaveGame(dirName);
                 showUI(true);
-            } else
+                RefreshLists();
+            }
+            else
             {
                 DebugLog("No save game selected to backup!");
             }
@@ -251,7 +331,9 @@ namespace FarmSimBackupManager
                 showUI(false);
                 RestoreGame(backupName);
                 showUI(true);
-            } else
+                RefreshLists();
+            }
+            else
             {
                 DebugLog("No backup file selected to restore!");
             }
@@ -415,7 +497,8 @@ namespace FarmSimBackupManager
                         DebugLog("RemoveBackup complete");
                     }
                 }
-            } else
+            }
+            else
             {
                 DebugLog("No backup selected to remove!");
             }
@@ -444,6 +527,8 @@ namespace FarmSimBackupManager
             buttonBackup.Enabled = show;
             buttonRestore.Enabled = show;
             buttonRemoveBackup.Enabled = show;
+            buttonOpenBackupLocation.Enabled = show;
+            buttonRefresh.Enabled = show;
         }
 
         // https://www.codeproject.com/Questions/852563/How-to-open-file-explorer-at-given-location-in-csh
@@ -465,6 +550,19 @@ namespace FarmSimBackupManager
         private void buttonOpenBackupLocation_Click(object sender, EventArgs e)
         {
             OpenFolder(backupFolder);
+        }
+
+        private void buttonRefresh_Click(object sender, EventArgs e)
+        {
+            RefreshLists();
+        }
+
+        private void RefreshLists()
+        {
+            showUI(false);
+            GetBackupFiles();
+            GetSaveGames();
+            showUI(true);
         }
     }
 }
