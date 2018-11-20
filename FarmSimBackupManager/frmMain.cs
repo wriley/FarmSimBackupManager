@@ -44,16 +44,10 @@ namespace FarmSimBackupManager
         {
             LoadSettings();
 
-            if (!Directory.Exists(backupFolder))
+            if (!Directory.Exists(backupFolder) || farmsimVersion == "")
             {
-                MessageBox.Show("You need to set your backup folder");
-                frmOptions frmOptions = new frmOptions(this);
-                frmOptions.Show(this);
-            }
-
-            if(farmsimVersion == "")
-            {
-                MessageBox.Show("You need to set your preferred game version");
+                farmsimVersion = "FarmingSimulator2019";
+                MessageBox.Show("You need to set your options");
                 frmOptions frmOptions = new frmOptions(this);
                 frmOptions.Show(this);
             }
@@ -91,6 +85,11 @@ namespace FarmSimBackupManager
 
         private void GetSaveGames()
         {
+            if(!Directory.Exists(saveGamePath))
+            {
+                DebugLog("Save game path not found, check options!");
+                return;
+            }
             mySaveGames = new List<FarmSimSaveGame>();
             string[] dirs = Directory.GetDirectories(saveGamePath);
             foreach (string dir in dirs)
@@ -163,6 +162,7 @@ namespace FarmSimBackupManager
         {
             if (!Directory.Exists(backupFolder))
             {
+                DebugLog("Backup folder not found, check options!");
                 return;
             }
             string[] backupFiles = Directory.GetFiles(backupFolder);
@@ -291,6 +291,11 @@ namespace FarmSimBackupManager
 
         private void buttonBackup_Click(object sender, EventArgs e)
         {
+            if (!Directory.Exists(backupFolder))
+            {
+                DebugLog("Backup folder not found, check options!");
+                return;
+            }
             if (treeViewSavegames.SelectedNode != null)
             {
 
@@ -310,6 +315,11 @@ namespace FarmSimBackupManager
 
         private void buttonRestore_Click(object sender, EventArgs e)
         {
+            if (!Directory.Exists(saveGamePath))
+            {
+                DebugLog("Save game path not found, check options!");
+                return;
+            }
             if (treeViewBackups.SelectedNode != null)
             {
                 string backupName = treeViewBackups.SelectedNode.Text;
