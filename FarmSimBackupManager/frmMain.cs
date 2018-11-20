@@ -248,7 +248,7 @@ namespace FarmSimBackupManager
             DateTime lastDate = DateTime.MinValue;
             for (int i = 0; i < backupSaveGames.Count; i++)
             {
-                Regex r = new Regex(@"^(savegame[0-9]+)_([0-9]{8}-[0-9]{6}).zip$");
+                Regex r = new Regex(@"^" + farmsimVersion + "_(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
                 Match m = r.Match(backupSaveGames[i].backupName);
                 if (m.Success)
                 {
@@ -440,7 +440,7 @@ namespace FarmSimBackupManager
         {
             DebugLog("Restoring game " + backupName);
             string dirNameFull = new FileInfo(backupName).Name;
-            Regex r = new Regex(@"(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip");
+            Regex r = new Regex(@"^" + farmsimVersion + "_(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
             Match m = r.Match(dirNameFull);
             DebugLog("dirNameFull " + dirNameFull);
             if (m.Success)
