@@ -24,6 +24,7 @@ namespace FarmSimBackupManager
         private void frmOptions_Load(object sender, EventArgs e)
         {
             textBoxBackupFolder.Text = parentForm.backupFolder;
+            comboBoxVersion.SelectedIndex = comboBoxVersion.FindStringExact(parentForm.farmsimVersion);
         }
 
         private void buttonOptionsSave_Click(object sender, EventArgs e)
@@ -45,6 +46,11 @@ namespace FarmSimBackupManager
                 parentForm.backupFolder = folderBrowserDialog1.SelectedPath;
                 textBoxBackupFolder.Text = folderBrowserDialog1.SelectedPath;
             }
+        }
+
+        private void comboBoxVersion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            parentForm.farmsimVersion = comboBoxVersion.SelectedItem.ToString();
         }
     }
 }

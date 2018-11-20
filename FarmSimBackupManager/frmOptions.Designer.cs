@@ -34,6 +34,8 @@
             this.buttonBackupFolder = new System.Windows.Forms.Button();
             this.buttonOptionsSave = new System.Windows.Forms.Button();
             this.buttonOptionsCancel = new System.Windows.Forms.Button();
+            this.comboBoxVersion = new System.Windows.Forms.ComboBox();
+            this.labelVersion = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // labelBackupFolder
@@ -83,11 +85,34 @@
             this.buttonOptionsCancel.UseVisualStyleBackColor = true;
             this.buttonOptionsCancel.Click += new System.EventHandler(this.buttonOptionsCancel_Click);
             // 
+            // comboBoxVersion
+            // 
+            this.comboBoxVersion.FormattingEnabled = true;
+            this.comboBoxVersion.Items.AddRange(new object[] {
+            "FarmingSimulator2017",
+            "FarmingSimulator2019"});
+            this.comboBoxVersion.Location = new System.Drawing.Point(94, 38);
+            this.comboBoxVersion.Name = "comboBoxVersion";
+            this.comboBoxVersion.Size = new System.Drawing.Size(151, 21);
+            this.comboBoxVersion.TabIndex = 5;
+            this.comboBoxVersion.SelectedIndexChanged += new System.EventHandler(this.comboBoxVersion_SelectedIndexChanged);
+            // 
+            // labelVersion
+            // 
+            this.labelVersion.AutoSize = true;
+            this.labelVersion.Location = new System.Drawing.Point(46, 41);
+            this.labelVersion.Name = "labelVersion";
+            this.labelVersion.Size = new System.Drawing.Size(42, 13);
+            this.labelVersion.TabIndex = 6;
+            this.labelVersion.Text = "Version";
+            // 
             // frmOptions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(495, 262);
+            this.Controls.Add(this.labelVersion);
+            this.Controls.Add(this.comboBoxVersion);
             this.Controls.Add(this.buttonOptionsCancel);
             this.Controls.Add(this.buttonOptionsSave);
             this.Controls.Add(this.buttonBackupFolder);
@@ -109,5 +134,7 @@
         private System.Windows.Forms.Button buttonBackupFolder;
         private System.Windows.Forms.Button buttonOptionsSave;
         private System.Windows.Forms.Button buttonOptionsCancel;
+        private System.Windows.Forms.ComboBox comboBoxVersion;
+        private System.Windows.Forms.Label labelVersion;
     }
 }
