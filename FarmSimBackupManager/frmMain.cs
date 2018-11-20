@@ -462,7 +462,18 @@ namespace FarmSimBackupManager
                         DialogResult result = MessageBox.Show(dirName + " already exists, overwrite?", "Overwrite Save?", MessageBoxButtons.YesNo);
                         if (result == DialogResult.Yes)
                         {
-                            Directory.Delete(mySaveGameDir, true);
+                            // file system calls can be delayed so wait for folder to be deleted
+                            var fi = new System.IO.FileInfo(mySaveGameDir);
+                            if (fi.Exists)
+                            {
+                                Directory.Delete(mySaveGameDir, true);
+                                fi.Refresh();
+                                while(fi.Exists)
+                                {
+                                    System.Threading.Thread.Sleep(100);
+                                    fi.Refresh();
+                                }
+                            }
                         }
                         if (result == DialogResult.No)
                         {
