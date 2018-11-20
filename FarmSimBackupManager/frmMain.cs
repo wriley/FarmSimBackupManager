@@ -14,7 +14,9 @@ namespace FarmSimBackupManager
     public partial class frmMain : Form
     {
         public string backupFolder;
+        public string farmsimVersion;
         private string saveGamePath;
+        private string saveGamePathRoot;
         private string timestampString = "yyyyMMdd-HHmmss";
         private List<TreeNode> unselectableSaveNodes = new List<TreeNode>();
         private List<TreeNode> unselectableBackupNodes = new List<TreeNode>();
@@ -49,10 +51,18 @@ namespace FarmSimBackupManager
                 frmOptions.Show(this);
             }
 
+            if(farmsimVersion == "")
+            {
+                MessageBox.Show("You need to set your preferred game version");
+                frmOptions frmOptions = new frmOptions(this);
+                frmOptions.Show(this);
+            }
+
             string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             DebugLog("Found My Documents path: " + path);
             // C:\Users\Computer User\Documents\My Games\FarmingSimulator2017
-            saveGamePath = path + Path.DirectorySeparatorChar + "My Games" + Path.DirectorySeparatorChar + "FarmingSimulator2017";
+            saveGamePathRoot = path + Path.DirectorySeparatorChar + "My Games";
+            saveGamePath = saveGamePathRoot + Path.DirectorySeparatorChar + farmsimVersion;
 
             RefreshLists();
         }
@@ -60,13 +70,18 @@ namespace FarmSimBackupManager
         private void LoadSettings()
         {
             backupFolder = Properties.Settings.Default.backupFolder;
+            farmsimVersion = Properties.Settings.Default.version;
         }
 
         public void SaveSettings()
         {
+            DebugLog("version: " + farmsimVersion);
             Properties.Settings.Default.backupFolder = backupFolder;
+            Properties.Settings.Default.version = farmsimVersion;
             Properties.Settings.Default.Save();
+            saveGamePath = saveGamePathRoot + Path.DirectorySeparatorChar + farmsimVersion;
             GetBackupFiles();
+            RefreshLists();
         }
 
         private void DebugLog(string msg)
@@ -152,7 +167,7 @@ namespace FarmSimBackupManager
             }
             string[] backupFiles = Directory.GetFiles(backupFolder);
             backupSaveGames = new List<FarmSimSaveGame>();
-            Regex r = new Regex(@"^(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
+            Regex r = new Regex(@"^" + farmsimVersion + "_(savegame[0-9]+)_[0-9]{8}-[0-9]{6}.zip$");
             Match m;
             foreach (string backupFile in backupFiles)
             {
@@ -211,38 +226,6 @@ namespace FarmSimBackupManager
                 unselectableBackupNodes.Add(newChildNode);
                 newChildNode = newParentNode.Nodes.Add(String.Format("Money: {0:n0}", backupSaveGames[i].money));
                 unselectableBackupNodes.Add(newChildNode);
-
-                /*
-                Regex r2 = new Regex(@"^(savegame[0-9]+)_([0-9]{8}-[0-9]{6}).zip$");
-                Match m2 = r2.Match(backupSaveGames[i].backupName);
-                if (m2.Success && m2.Groups.Count == 3)
-                {
-                    DateTime saveDate = GetSaveGameDate(m2.Groups[1].Value);
-                    if (saveDate != DateTime.MinValue)
-                    {
-                        try
-                        {
-                            DateTime zipDate = new DateTime();
-                            DateTime.TryParseExact(m2.Groups[2].Value, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out zipDate);
-                            if(zipDate != DateTime.MinValue)
-                            {
-                                if (zipDate.CompareTo(saveDate) >= 0)
-                                {
-                                    newParentNode.ForeColor = System.Drawing.Color.Green;
-                                    newParentNode.NodeFont = new System.Drawing.Font(treeViewBackups.Font, System.Drawing.FontStyle.Bold);
-                                }
-                            }
-                            
-                        }
-                        catch (Exception ex)
-                        {
-                            DebugLog("Exception: " + ex.ToString());
-                        }
-
-
-                    }
-                }
-                */
             }
             treeViewBackups.EndUpdate();
         }
@@ -348,7 +331,7 @@ namespace FarmSimBackupManager
             if (Directory.Exists(mySaveGameDir))
             {
                 string dateString = DateTime.Now.ToString(timestampString);
-                string zipFilePath = backupFolder + Path.DirectorySeparatorChar + dirName + "_" + dateString + ".zip";
+                string zipFilePath = backupFolder + Path.DirectorySeparatorChar + farmsimVersion + "_" + dirName + "_" + dateString + ".zip";
                 DebugLog("zipping to " + zipFilePath);
                 ZipFolder(mySaveGameDir, zipFilePath);
                 GetBackupFiles();
@@ -462,7 +445,19 @@ namespace FarmSimBackupManager
                         DialogResult result = MessageBox.Show(dirName + " already exists, overwrite?", "Overwrite Save?", MessageBoxButtons.YesNo);
                         if (result == DialogResult.Yes)
                         {
-                            Directory.Delete(mySaveGameDir, true);
+                            // file system calls can be delayed so wait for folder to be deleted
+                            var fi = new System.IO.FileInfo(mySaveGameDir);
+                            if (fi.Exists)
+                            {
+                                Directory.Delete(mySaveGameDir, true);
+                                fi.Refresh();
+                                while(fi.Exists)
+                                {
+                                    System.Threading.Thread.Sleep(100);
+                                    fi.Refresh();
+                                }
+                            }
+                            
                         }
                         if (result == DialogResult.No)
                         {
