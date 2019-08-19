@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
@@ -361,7 +361,7 @@ namespace FarmSimBackupManager
 
                 using (ZipOutputStream s = new ZipOutputStream(File.Create(zipFile)))
                 {
-                    s.SetLevel(9);
+                    s.SetLevel(3);
                     byte[] buffer = new byte[4096];
                     foreach (string file in filenames)
                     {
