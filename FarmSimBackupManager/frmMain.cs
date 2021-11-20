@@ -199,16 +199,11 @@ namespace FarmSimBackupManager
 
                                     save.directoryName = m.Groups[1].Value;
                                     save.backupName = fileName;
-                                    XmlNode node = gameXml.DocumentElement.SelectSingleNode("settings/savegameName");
-                                    save.savegameName = node.InnerText;
-                                    node = gameXml.DocumentElement.SelectSingleNode("settings/mapTitle");
-                                    save.mapTitle = node.InnerText;
-                                    node = gameXml.DocumentElement.SelectSingleNode("settings/saveDate");
-                                    save.saveDate = node.InnerText;
-                                    node = gameXml.DocumentElement.SelectSingleNode("settings/playerName");
-                                    save.playerName = node.InnerText;
-                                    node = gameXml.DocumentElement.SelectSingleNode("statistics/money");
-                                    save.money = Convert.ToInt32(node.InnerText);
+                                    save.savegameName = getNodeText(gameXml, "settings/savegameName");
+                                    save.mapTitle = getNodeText(gameXml, "settings/mapTitle");
+                                    save.saveDate = getNodeText(gameXml, "settings/saveDate");
+                                    save.playerName = getNodeText(gameXml, "settings/playerName");
+                                    save.money = Convert.ToInt32(getNodeText(gameXml, "statistics/money"));
                                     backupSaveGames.Add(save);
                                 }
                             }
