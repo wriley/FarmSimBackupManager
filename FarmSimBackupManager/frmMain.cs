@@ -83,6 +83,18 @@ namespace FarmSimBackupManager
             textBoxDebug.AppendText(msg + "\r\n");
         }
 
+        private string getNodeText(XmlDocument document, string name)
+        {
+            XmlNode node = document.DocumentElement.SelectSingleNode(name);
+            if(node == null)
+            {
+                return "N/A";
+            } else
+            {
+                return node.InnerText;
+            }
+        }
+
         private void GetSaveGames()
         {
             if(!Directory.Exists(saveGamePath))
@@ -115,16 +127,12 @@ namespace FarmSimBackupManager
                             DirectoryInfo di = new DirectoryInfo(dir);
                             save.directoryName = di.Name;
                             save.directoryChanged = di.LastWriteTime;
-                            XmlNode node = gameXml.DocumentElement.SelectSingleNode("settings/savegameName");
-                            save.savegameName = node.InnerText;
-                            node = gameXml.DocumentElement.SelectSingleNode("settings/mapTitle");
-                            save.mapTitle = node.InnerText;
-                            node = gameXml.DocumentElement.SelectSingleNode("settings/saveDate");
-                            save.saveDate = node.InnerText;
-                            node = gameXml.DocumentElement.SelectSingleNode("settings/playerName");
-                            save.playerName = node.InnerText;
-                            node = gameXml.DocumentElement.SelectSingleNode("statistics/money");
-                            save.money = Convert.ToInt32(node.InnerText);
+                            save.savegameName = getNodeText(gameXml, "settings/savegameName");
+                            save.mapTitle = getNodeText(gameXml, "settings/mapTitle");
+                            save.saveDate = getNodeText(gameXml, "settings/saveDate");
+                            save.playerName = getNodeText(gameXml, "settings/playerName");
+                            save.money = Convert.ToInt32(getNodeText(gameXml, "statistics/money"));
+
                             DebugLog("adding " + save.directoryName);
                             mySaveGames.Add(save);
                         }
