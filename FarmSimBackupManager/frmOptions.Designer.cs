@@ -90,7 +90,8 @@
             this.comboBoxVersion.FormattingEnabled = true;
             this.comboBoxVersion.Items.AddRange(new object[] {
             "FarmingSimulator2017",
-            "FarmingSimulator2019"});
+            "FarmingSimulator2019",
+            "FarmingSimulator2022"});
             this.comboBoxVersion.Location = new System.Drawing.Point(94, 38);
             this.comboBoxVersion.Name = "comboBoxVersion";
             this.comboBoxVersion.Size = new System.Drawing.Size(151, 21);
