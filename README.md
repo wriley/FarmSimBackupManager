@@ -2,7 +2,7 @@
 
 ![screenshot](https://github.com/wriley/FarmSimBackupManager/blob/master/screenshot.png)
 
-A simple backup/restore tool for Farming Simulator 17/19
+A simple backup/restore tool for Farming Simulator 17/19/22
 
 How to install:
 * Download ![FarmSimBackupManager.zip](https://github.com/wriley/FarmSimBackupManager/raw/master/download/FarmSimBackupManager.zip) and extract to folder of your choice
